@@ -61,7 +61,7 @@ public:
     auto SetPath(fs::path file_path) {_path_name = file_path;}
     auto& GetData() const { return _data; }
 
-    void check_path(fs::path _ext) {
+    void check_path() {
         std::error_code ec; 
         assert(fs::is_regular_file(_path_name) && fs::exists(_path_name));
         // check bin file
@@ -80,7 +80,7 @@ public:
         KittiParser<VelodyneData>(file_path) { };
     bool ParseData() {
         // check the path  
-        check_path(_ext);
+        check_path(file_path);
         // cloud be used to managed by shared_ptr since cpp17, for the auto destroy ability;
         char* binary_data = nullptr;   // binary data;
         // load data
@@ -131,7 +131,7 @@ public:
     StampParser(const fs::path file_path) :
         KittiParser<StampData>(file_path) {};
     bool ParseData() {
-        check_path(_ext);
+        check_path();
         if(std::ifstream fin{_path_name.c_str(), std::ios::in}) {
                 std::stringstream str_stream;
                 str_stream << fin.rdbuf();

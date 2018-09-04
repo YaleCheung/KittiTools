@@ -100,9 +100,9 @@ public:
 
 
 private:
-    std::vector<fs::path>&& _SubFiles(const fs::path p) {
+    std::vector<fs::path>&& _SubFiles(const fs::path path) {
         vector<fs::path> subfiles;
-        for(const auto& p : fs::directory_iterator(p)) {
+        for(const auto& p : fs::directory_iterator(path)) {
             subfiles.push_back(p);
         }
         std::sort(subfiles.begin(), subfiles.end());
