@@ -37,7 +37,7 @@ typedef struct VelodyneData : public KittiData {
 
 class Parser : public NonCopyable {
 public:
-    virtual bool ParseData() = 0; 
+    virtual auto ParseData(const fs::path&) -> bool = 0; 
 };
 
 template<typename T, 
@@ -66,7 +66,7 @@ public:
     }
     auto& GetData() const { return _data; }
 
-    void check_file_path() {
+    auto check_file_path() {
         std::error_code ec; 
         assert(fs::is_regular_file(_path_name) && fs::exists(_path_name));
         // check bin file
@@ -84,7 +84,12 @@ public:
         KittiParser<VelodyneData>() { _ext = ".bin"; }
     VeloParser(const fs::path& file_path):
         KittiParser<VelodyneData>(file_path){ _ext = ".bin"; }
-    bool ParseData() {
+    auto ParseData(const fs::path& p) -> bool {
+        SetPath(p);
+        return _ParseData();
+    }
+private:
+    auto _ParseData() -> bool {
         // check the path  
         check_file_path();
         // cloud be used to managed by shared_ptr since cpp17, for the auto destroy ability;
@@ -113,10 +118,6 @@ public:
         delete [] binary_data;
         return true;
     }
-    bool ParseData(const fs::path& p) {
-        SetPath(p);
-        return ParseData();
-    }
 };
 
 
@@ -134,7 +135,12 @@ public:
         KittiParser<StampData>() { _ext = ".txt"; }
     StampParser(const fs::path& file_path) :
         KittiParser<StampData>(file_path){_ext = ".txt";}
-    bool ParseData() {
+    auto ParseData(const fs::path& p) -> bool {
+        SetPath(p);
+        return _ParseData();
+    }
+private:
+    auto _ParseData() -> bool{
         check_file_path();
         if(std::ifstream fin{_path_name.c_str(), std::ios::in}) {
                 std::stringstream str_stream;
@@ -146,10 +152,6 @@ public:
                 return true;
         }
         return false;
-    }
-    bool ParseData(const fs::path& p) {
-        SetPath(p);
-        return ParseData();
     }
 };
 #endif // VeloParser

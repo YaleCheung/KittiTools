@@ -19,7 +19,7 @@ namespace fs = std::experimental::filesystem;
 
 class BaseConverter : public NonCopyable {
 public:
-    virtual bool ToBag() = 0;
+    virtual auto ToBag() -> bool = 0;
 };
 
 class VeloConverter : BaseConverter {
@@ -30,7 +30,7 @@ public:
        _timestamp_path(timestamp_path) { }
 
 
-    bool ToBag() {
+    auto ToBag() -> bool {
         _bag.open(_bag_file_path.c_str(), rosbag::bagmode::Write);
         if (! fs::exists(_bag_file_path.c_str())) 
             return false;
@@ -95,7 +95,7 @@ public:
             msg.point_step = POINTSTEP;
             msg.data.resize(std::max((size_t)1, velo_data.size()) * POINTSTEP, 0x00);
             uint8_t* ptr = msg.data.data();
-            for (size_t i = 0; i < velo_data.size(); i++) {
+            for (auto i = 0; i < velo_data.size(); ++ i) {
                  *((float*)(ptr + 0)) = velo_data[i].x;
                  *((float*)(ptr + 4)) = velo_data[i].y;
                  *((float*)(ptr + 8)) = velo_data[i].z;
@@ -123,22 +123,23 @@ private:
         std::sort(subfiles.begin(), subfiles.end());
         return subfiles;
     }
-    std::vector<VelodyneData> _LoadVeloDataSet(const fs::path& p) {
-        VeloParser parser;
-        parser.SetPath(p);
-        parser.ParseData();
-        auto data = parser.GetData();
-        return data;
-    }
 
-    // where copy happens, should be optimized by rref
-    std::vector<StampData> _LoadStampDataset(const fs::path& p) {
-        StampParser parser;
-        parser.SetPath(p);
-        parser.ParseData();
-        auto data = parser.GetData();
-        return data;
-    }
+    // auto _LoadVeloDataSet(const fs::path& p) {
+    //     VeloParser parser;
+    //     parser.SetPath(p);
+    //     parser.ParseData();
+    //     auto data = parser.GetData();
+    //     return data;
+    // }
+    //
+    // // where copy happens, should be optimized by rref
+    // auto _LoadStampDataset(const fs::path& p) {
+    //     StampParser parser;
+    //     parser.SetPath(p);
+    //     parser.ParseData();
+    //     auto data = parser.GetData();
+    //     return data;
+    // }
 
     typename fs::path _velo_data_dir{""};
     typename fs::path _timestamp_path{""};
