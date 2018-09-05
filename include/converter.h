@@ -9,6 +9,7 @@
 #include <map>
 #include <algorithm>
 #include <ctime>
+#include <vector>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -43,9 +44,9 @@ public:
         auto stamp_data = stamp_parser.GetData();
 
         auto order_file = 0;
-        auto subfiles = _SubFiles(_velo_data_dir);
-
-        for(auto& p : subfiles) {
+        // std::vector<fs::path> subfiles = _SubFiles(_velo_data_dir);
+        auto  subfiles = _SubFiles(_velo_data_dir);
+        for(const auto p : subfiles) {
             if (order_file % 100 == 0)
                 ROS_INFO("Processing %dth file\t  Total:%d", order_file, subfiles.size());
            
@@ -115,8 +116,9 @@ public:
 
 private:
     // will be optimized by clang for the RVO;
-    std::vector<fs::path> _SubFiles(const fs::path& path) {
-        vector<fs::path> subfiles;
+    // std::vector<fs::path> _SubFiles(const fs::path& path) {
+    auto _SubFiles(const fs::path& path) -> std::vector<fs::path> {
+            std::vector<fs::path> subfiles;
         for(const auto& p : fs::directory_iterator(path)) {
             subfiles.push_back(p);
         }

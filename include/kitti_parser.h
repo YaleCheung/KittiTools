@@ -13,10 +13,6 @@
 #include "noncopyable.h"
 namespace fs = std::experimental::filesystem;
 
-using string = std::string;
-using ifstream = std::ifstream;
-using std::vector;
-using std::cout;
 
 
 // todo:  @@
@@ -75,7 +71,7 @@ public:
 protected:    
     fs::path _path_name;
     fs::path _ext;
-    vector<T> _data;
+    std::vector<T> _data;
 };// KittiParser;
 
 class VeloParser : public KittiParser<VelodyneData> {
@@ -103,7 +99,7 @@ private:
             fin.read(binary_data, data_length);
             fin.close();
         } else {
-            cout << __FILE__ << " " << __LINE__ << ": cannot open the file " << _path_name.c_str() << '\n';
+            std::cout << __FILE__ << " " << __LINE__ << ": cannot open the file " << _path_name.c_str() << '\n';
             return false;
         }
         auto data = reinterpret_cast<VelodyneData*>(binary_data);
