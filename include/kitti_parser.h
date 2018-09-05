@@ -10,6 +10,7 @@
 #include <memory>
 #include <sstream>
 
+#include "noncopyable.h"
 namespace fs = std::experimental::filesystem;
 
 using string = std::string;
@@ -34,7 +35,7 @@ typedef struct VelodyneData : public KittiData {
     float reflectance;
 } VelodyneData;
 
-class Parser {
+class Parser : public NonCopyable {
 public:
     virtual bool ParseData() = 0; 
 };
@@ -42,23 +43,27 @@ public:
 template<typename T, 
         class = typename std::enable_if<std::is_base_of<KittyData, T>::value>::type
         >
-class KittiParser : Parser {
+class KittiParser : public Parser {
 public:
     // constructor;
     KittiParser() :
         _path_name("") {};
-    KittiParser(const fs::path file_path) :
+    KittiParser(const fs::path& file_path) :
         _path_name(file_path) , _ext("") {
+        
         _data.reserve(10000);
     } 
 
-    /* KittiParser(const fs::path file_path) : */
+    /* KittiParser(const fs::path& file_path) : */
     /*     _path_name(file_path) { */
     /*     _data.reserve(10000); */
     /* } */
      
     auto GetPath() const { return _path_name.c_str(); }
-    auto SetPath(fs::path file_path) {_path_name = file_path;}
+    auto SetPath(const fs::path& file_path) {
+        _data.clear();
+        _path_name = file_path;
+    }
     auto& GetData() const { return _data; }
 
     void check_file_path() {
@@ -77,7 +82,7 @@ class VeloParser : public KittiParser<VelodyneData> {
 public:
     VeloParser() : 
         KittiParser<VelodyneData>() { _ext = ".bin"; }
-    VeloParser(const fs::path file_path):
+    VeloParser(const fs::path& file_path):
         KittiParser<VelodyneData>(file_path){ _ext = ".bin"; }
     bool ParseData() {
         // check the path  
@@ -108,7 +113,7 @@ public:
         delete [] binary_data;
         return true;
     }
-    bool ParseData(const fs::path p) {
+    bool ParseData(const fs::path& p) {
         SetPath(p);
         return ParseData();
     }
@@ -117,17 +122,17 @@ public:
 
 typedef struct StampData : public KittiData {
 public:
-    StampData(float stamp) :
+    StampData(double stamp) :
         time_stamp(stamp) {}
 
-    float time_stamp;
+    double time_stamp;
 
 } StampData;
 class StampParser : public KittiParser<StampData> {
 public:
     StampParser() : 
         KittiParser<StampData>() { _ext = ".txt"; }
-    StampParser(const fs::path file_path) :
+    StampParser(const fs::path& file_path) :
         KittiParser<StampData>(file_path){_ext = ".txt";}
     bool ParseData() {
         check_file_path();
@@ -142,7 +147,7 @@ public:
         }
         return false;
     }
-    bool ParseData(const fs::path p) {
+    bool ParseData(const fs::path& p) {
         SetPath(p);
         return ParseData();
     }

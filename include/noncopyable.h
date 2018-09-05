@@ -2,8 +2,11 @@
 #define NONCOPYABLE_HHH
 
 class NonCopyable {
+protected:
+    NonCopyable() {};
+    ~NonCopyable() {};
 public:
     NonCopyable(const NonCopyable&) = delete;
-    NonCopyable& operator=(const NonCopyable&) = delete;
+    const NonCopyable& operator=(const NonCopyable&) = delete;
 };
 #endif

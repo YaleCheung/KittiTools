@@ -8,21 +8,23 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <ctime>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <experimental/filesystem>
+#include "noncopyable.h"
 
 namespace fs = std::experimental::filesystem;
 
-class BaseConverter {
+class BaseConverter : public NonCopyable {
 public:
     virtual bool ToBag() = 0;
 };
 
 class VeloConverter : BaseConverter {
 public:
-    VeloConverter(fs::path bag_file_name, fs::path data_dir, fs::path timestamp_path) :
+    VeloConverter(const fs::path& bag_file_name, const fs::path& data_dir, const fs::path& timestamp_path) :
        _bag_file_path(bag_file_name), 
        _velo_data_dir(data_dir), 
        _timestamp_path(timestamp_path) { }
@@ -30,29 +32,31 @@ public:
 
     bool ToBag() {
         _bag.open(_bag_file_path.c_str(), rosbag::bagmode::Write);
+        if (! fs::exists(_bag_file_path.c_str())) 
+            return false;
 
         VeloParser velo_parser;
         StampParser stamp_parser;
-        stamp_parser.SetPath(_timestamp_path);
+        stamp_parser.ParseData(_timestamp_path);
 
-        stamp_parser.ParseData();
+        // stamp_parser.ParseData();
         auto stamp_data = stamp_parser.GetData();
 
         auto order_file = 0;
         auto subfiles = _SubFiles(_velo_data_dir);
+
         for(auto& p : subfiles) {
-            if (order_file % 10 == 0)
-                ROS_INFO("Processing %dth file\t  Total:%d\n", order_file, subfiles.size());
-            velo_parser.SetPath(p);
-            velo_parser.ParseData(); 
+            if (order_file % 100 == 0)
+                ROS_INFO("Processing %dth file\t  Total:%d", order_file, subfiles.size());
+           
+            // velo_parser.SetPath(p);
+            velo_parser.ParseData(p); 
             auto velo_data = velo_parser.GetData();
             // envo the constract;
             std_msgs::Header  header;
             header.frame_id = _frame_id;
-            float time = float(stamp_data[order_file ++].time_stamp);
-            if (abs(time) < 0.0000001)
-                time = 0.0000001;
-            header.stamp = ros::Time(time);
+            double time = stamp_data[order_file ++].time_stamp;
+            header.stamp = ros::Time().fromSec(1 + time);
            
             //fill the pointcloud2 msg
             sensor_msgs::PointCloud2 msg;
@@ -81,6 +85,7 @@ public:
             msg.fields[3].datatype = sensor_msgs::PointField::FLOAT32;
             msg.fields[3].count = 1;
             
+            // package a msg
             msg.header = header;
             msg.height = 1;
             msg.width = velo_data.size();
@@ -88,7 +93,6 @@ public:
             msg.is_bigendian = false;
             /* msg.fields = fields; */
             msg.point_step = POINTSTEP;
-            
             msg.data.resize(std::max((size_t)1, velo_data.size()) * POINTSTEP, 0x00);
             uint8_t* ptr = msg.data.data();
             for (size_t i = 0; i < velo_data.size(); i++) {
@@ -102,6 +106,7 @@ public:
             _bag.write(_topic, header.stamp, msg);
         }
         _bag.close();
+        return true;
     }
     // return data from a seq
     
@@ -110,7 +115,7 @@ public:
 
 private:
     // will be optimized by clang for the RVO;
-    std::vector<fs::path> _SubFiles(const fs::path path) {
+    std::vector<fs::path> _SubFiles(const fs::path& path) {
         vector<fs::path> subfiles;
         for(const auto& p : fs::directory_iterator(path)) {
             subfiles.push_back(p);
@@ -118,7 +123,7 @@ private:
         std::sort(subfiles.begin(), subfiles.end());
         return subfiles;
     }
-    std::vector<VelodyneData> _LoadVeloDataSet(const fs::path p) {
+    std::vector<VelodyneData> _LoadVeloDataSet(const fs::path& p) {
         VeloParser parser;
         parser.SetPath(p);
         parser.ParseData();
@@ -127,7 +132,7 @@ private:
     }
 
     // where copy happens, should be optimized by rref
-    std::vector<StampData> _LoadStampDataset(const fs::path p) {
+    std::vector<StampData> _LoadStampDataset(const fs::path& p) {
         StampParser parser;
         parser.SetPath(p);
         parser.ParseData();
