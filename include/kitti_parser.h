@@ -48,7 +48,7 @@ public:
     KittiParser() :
         _path_name("") {};
     KittiParser(const fs::path file_path) :
-        _path_name(file_path) {
+        _path_name(file_path) , _ext("") {
         _data.reserve(10000);
     } 
 
@@ -61,7 +61,7 @@ public:
     auto SetPath(fs::path file_path) {_path_name = file_path;}
     auto& GetData() const { return _data; }
 
-    void check_path() {
+    void check_file_path() {
         std::error_code ec; 
         assert(fs::is_regular_file(_path_name) && fs::exists(_path_name));
         // check bin file
@@ -69,18 +69,19 @@ public:
     }
 protected:    
     fs::path _path_name;
+    fs::path _ext;
     vector<T> _data;
 };// KittiParser;
 
 class VeloParser : public KittiParser<VelodyneData> {
 public:
     VeloParser() : 
-        KittiParser<VelodyneData>() {};
+        KittiParser<VelodyneData>() { _ext = ".bin"; }
     VeloParser(const fs::path file_path):
-        KittiParser<VelodyneData>(file_path) { };
+        KittiParser<VelodyneData>(file_path){ _ext = ".bin"; }
     bool ParseData() {
         // check the path  
-        check_path(file_path);
+        check_file_path();
         // cloud be used to managed by shared_ptr since cpp17, for the auto destroy ability;
         char* binary_data = nullptr;   // binary data;
         // load data
@@ -111,8 +112,6 @@ public:
         SetPath(p);
         return ParseData();
     }
-private:
-    fs::path _ext{".bin"};
 };
 
 
@@ -127,11 +126,11 @@ public:
 class StampParser : public KittiParser<StampData> {
 public:
     StampParser() : 
-        KittiParser<StampData>() {};
+        KittiParser<StampData>() { _ext = ".txt"; }
     StampParser(const fs::path file_path) :
-        KittiParser<StampData>(file_path) {};
+        KittiParser<StampData>(file_path){_ext = ".txt";}
     bool ParseData() {
-        check_path();
+        check_file_path();
         if(std::ifstream fin{_path_name.c_str(), std::ios::in}) {
                 std::stringstream str_stream;
                 str_stream << fin.rdbuf();
@@ -147,8 +146,5 @@ public:
         SetPath(p);
         return ParseData();
     }
-private:
-    const fs::path _ext{".txt"};
-
 };
 #endif // VeloParser

@@ -7,6 +7,7 @@
 #include <rosbag/view.h>
 #include <string>
 #include <map>
+#include <algorithm>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -32,18 +33,25 @@ public:
 
         VeloParser velo_parser;
         StampParser stamp_parser;
+        stamp_parser.SetPath(_timestamp_path);
 
         stamp_parser.ParseData();
         auto stamp_data = stamp_parser.GetData();
 
         auto order_file = 0;
-        for(const auto& p : _SubFiles(_velo_data_dir)) {
+        auto subfiles = _SubFiles(_velo_data_dir);
+        for(auto& p : subfiles) {
+            if (order_file % 10 == 0)
+                ROS_INFO("Processing %dth file\t  Total:%d\n", order_file, subfiles.size());
+            velo_parser.SetPath(p);
             velo_parser.ParseData(); 
             auto velo_data = velo_parser.GetData();
             // envo the constract;
             std_msgs::Header  header;
             header.frame_id = _frame_id;
-            double time = float(stamp_data[order_file].time_stamp);
+            float time = float(stamp_data[order_file ++].time_stamp);
+            if (abs(time) < 0.0000001)
+                time = 0.0000001;
             header.stamp = ros::Time(time);
            
             //fill the pointcloud2 msg
@@ -81,6 +89,7 @@ public:
             /* msg.fields = fields; */
             msg.point_step = POINTSTEP;
             
+            msg.data.resize(std::max((size_t)1, velo_data.size()) * POINTSTEP, 0x00);
             uint8_t* ptr = msg.data.data();
             for (size_t i = 0; i < velo_data.size(); i++) {
                  *((float*)(ptr + 0)) = velo_data[i].x;
@@ -100,28 +109,30 @@ public:
 
 
 private:
-    std::vector<fs::path>&& _SubFiles(const fs::path path) {
+    // will be optimized by clang for the RVO;
+    std::vector<fs::path> _SubFiles(const fs::path path) {
         vector<fs::path> subfiles;
         for(const auto& p : fs::directory_iterator(path)) {
             subfiles.push_back(p);
         }
         std::sort(subfiles.begin(), subfiles.end());
-        return std::move(subfiles);
+        return subfiles;
     }
-    std::vector<VelodyneData>&& _LoadVeloDataSet(const fs::path p) {
+    std::vector<VelodyneData> _LoadVeloDataSet(const fs::path p) {
         VeloParser parser;
         parser.SetPath(p);
         parser.ParseData();
         auto data = parser.GetData();
-        return std::move(data);
+        return data;
     }
 
-    std::vector<StampData>&& _LoadStampDataset(const fs::path p) {
+    // where copy happens, should be optimized by rref
+    std::vector<StampData> _LoadStampDataset(const fs::path p) {
         StampParser parser;
         parser.SetPath(p);
         parser.ParseData();
         auto data = parser.GetData();
-        return std::move(data);
+        return data;
     }
 
     typename fs::path _velo_data_dir{""};
