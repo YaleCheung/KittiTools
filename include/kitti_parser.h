@@ -43,7 +43,7 @@ class KittiParser : public Parser {
 public:
     // constructor;
     KittiParser() :
-        _path_name("") {};
+        _path_name(""), _ext("") { _data.reserve(10000); };
     KittiParser(const fs::path& file_path) :
         _path_name(file_path) , _ext("") {
         
@@ -125,6 +125,7 @@ public:
     double time_stamp;
 
 } StampData;
+
 class StampParser : public KittiParser<StampData> {
 public:
     StampParser() : 

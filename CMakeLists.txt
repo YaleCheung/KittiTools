@@ -31,10 +31,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_executable(KittiParserTest src/test.cc)
+add_executable(KittiParserTest src/kitti_parser_output.cc)
 target_link_libraries(KittiParserTest stdc++fs)
-add_executable(Odometry2Kitti src/kitti2bag.cc)
-target_link_libraries(Odometry2Kitti stdc++fs ${catkin_LIBRARIES})
+add_executable(Kitti2Bag src/kitti2bag.cc)
+target_link_libraries(Kitti2Bag stdc++fs ${catkin_LIBRARIES})
+add_executable(KittiPublisher src/kitti_data_publisher.cc)
+target_link_libraries(KittiPublisher stdc++fs ${catkin_LIBRARIES})
 # System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
