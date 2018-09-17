@@ -19,7 +19,7 @@ namespace fs = std::experimental::filesystem;
 //        @seperate kitti data from file operation;
 //        @add more operations;
 //        @@
-// Problem:   not expception safe;    
+// Problem:   non expception safe;    
 
 // type ensurence
 typedef struct KittyData {} KittiData;
