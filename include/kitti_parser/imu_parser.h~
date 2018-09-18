@@ -61,9 +61,6 @@ private:
     auto _ParseData() -> bool {
         check_file_path();
         // return all the Imu data
-        auto files = FileOpt::SubFiles(_path_name);
-        
-        for(auto 
     }
 }
 
