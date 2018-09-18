@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
 
     if (argc != 3) {
-        ROS_ERROR("Usage:\n \ ¦       Odometry2Kitti <velo_data_pos> <time.txt pos>");
+        ROS_ERROR("Usage:\n  Odometry2Kitti <velo_data_pos> <time.txt pos>");
         return -1;
     }
 

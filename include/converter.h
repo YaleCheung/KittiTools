@@ -1,7 +1,9 @@
 #ifndef KITTIDATA_HHH
 #define KITTIDATA_HHH
 
-#include "kitti_parser.h"
+#include "parser.h"
+#include "file_opt.h"
+
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <string>
@@ -50,7 +52,7 @@ public:
 
         auto order_file = 0;
         // std::vector<fs::path> subfiles = _SubFiles(_velo_data_dir);
-        auto  subfiles = _SubFiles(_velo_data_dir);
+        auto  subfiles = FileOPT::SubFiles(_velo_data_dir);
         for(const auto& p : subfiles) {
             if (order_file % 100 == 0)
                 ROS_INFO("Processing %dth file\t  Total:%zu", order_file, subfiles.size());
@@ -135,7 +137,7 @@ private:
     // will be optimized by clang for the RVO;
     // std::vector<fs::path> _SubFiles(const fs::path& path) {
     auto _SubFiles(const fs::path& path) -> std::vector<fs::path> {
-            std::vector<fs::path> subfiles;
+        std::vector<fs::path> subfiles;
         for(const auto& p : fs::directory_iterator(path)) 
             subfiles.push_back(p);
         
