@@ -44,12 +44,12 @@ struct ImuData : public KittiData {
     unsigned int posmode;
     unsigned int velmode;
     unsigned int orimode;
-}
+};
 
-class ImuParser : KittiParser<ImuData> {
+class ImuParser : public KittiParser<ImuData> {
 public:
     ImuParser() :
-        KittiParser<ImuData>() {_ext = ".txt" }
+        KittiParser<ImuData>() {_ext = ".txt"; }
     ImuParser(const fs::path& file_path) :
         KittiParser<ImuData>(file_path) { _ext = ".txt"; }
 
@@ -59,12 +59,51 @@ public:
     }
 private:
     auto _ParseData() -> bool {
-        check_file_path();
+        FileOpt::CheckValidDir(_path_name);
         // return all the Imu data
         auto files = FileOpt::SubFiles(_path_name);
         
-        for(auto 
-    }
-}
+        for(const auto& file : files) {
+            if (std::ifstream fin{file.c_str(), std::ios::in}) {
+                std::stringstream ss;
+                ImuData imu;
+                ss << fin.rdbuf();
 
+                ss >> imu.lat
+                   >> imu.lon
+                   >> imu.alt 
+                   >> imu.roll
+                   >> imu.pitch                       
+                   >> imu.yaw
+                   >> imu.vn
+                   >> imu.ve
+                   >> imu.vf
+                   >> imu.vl
+                   >> imu.vu
+                   >> imu.ax
+                   >> imu.ay
+                   >> imu.az
+                   >> imu.af
+                   >> imu.al
+                   >> imu.au
+                   >> imu.wx
+                   >> imu.wy
+                   >> imu.wz
+                   >> imu.wf
+                   >> imu.wl
+                   >> imu.wu
+                   >> imu.pos_accuracy
+                   >> imu.vel_accuracy
+                   >> imu.navstat
+                   >> imu.numsats
+                   >> imu.posmode
+                   >> imu.velmode
+                   >> imu.orimode;
+                _data.emplace_back(imu);
+                fin.close();
+            } else return false;
+        }
+        return true;
+    }
+};  //ImuParser
 #endif // IMUPARSER_HHH

@@ -10,7 +10,7 @@
 
 namespace fs = std::experimental::filesystem;
 
-class FileOPT {
+class FileOpt {
 public:
 
     static auto GetExtension(const fs::path& p) {

@@ -31,7 +31,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_executable(KittiParserTest src/kitti_parser_output.cc)
+add_executable(KittiParserTest test/kitti_parser_output.cc)
 target_link_libraries(KittiParserTest stdc++fs)
 add_executable(Kitti2Bag src/kitti2bag.cc)
 target_link_libraries(Kitti2Bag stdc++fs ${catkin_LIBRARIES})

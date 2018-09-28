@@ -33,7 +33,7 @@ public:
        _bag_file_path(bag_file_name), 
        _velo_data_dir(data_dir), 
        _timestamp_path(timestamp_path) {
-       _bag.open(_bag_file_path.c_str(), rosbag::bagmode::Write);
+           _bag.open(_bag_file_path.c_str(), rosbag::bagmode::Write);
        }
 
     ~VeloConverter() { _bag.close(); }
@@ -52,7 +52,7 @@ public:
 
         auto order_file = 0;
         // std::vector<fs::path> subfiles = _SubFiles(_velo_data_dir);
-        auto  subfiles = FileOPT::SubFiles(_velo_data_dir);
+        auto  subfiles = FileOpt::SubFiles(_velo_data_dir);
         for(const auto& p : subfiles) {
             if (order_file % 100 == 0)
                 ROS_INFO("Processing %dth file\t  Total:%zu", order_file, subfiles.size());
