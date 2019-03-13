@@ -52,7 +52,7 @@ public:
     }
     auto& GetData() const { return _data; }
 
-    auto check_file_path() {
+    auto check_file_path() const {
         std::error_code ec; 
         assert(fs::is_regular_file(_path_name) && fs::exists(_path_name));
         // check bin file

@@ -27,7 +27,7 @@ protected:
     rosbag::Bag _bag;
 };
 
-class VeloConverter : BaseConverter {
+class VeloConverter : public BaseConverter {
 public:
     VeloConverter(const fs::path& bag_file_name = "", const fs::path& data_dir = "", const fs::path& timestamp_path = "") :
        _bag_file_path(bag_file_name), 
